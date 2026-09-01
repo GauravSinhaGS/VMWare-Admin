@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaurav Sinha — Systems &amp; Cloud Infra Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D12;
+  --panel:#10141B;
+  --surface:rgba(255,255,255,.035);
+  --border:rgba(255,255,255,.085);
+  --text:#E6EAF0;
+  --muted:#7C8695;
+  --cyan:#22D3EE;
+  --amber:#F5A623;
+  --green:#34D399;
+  --font-mono:'IBM Plex Mono',monospace;
+  --font-sans:'IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg); color:var(--text); font-family:var(--font-sans); overflow-x:hidden; -webkit-font-smoothing:antialiased;}
+::selection{background:var(--cyan); color:#04151a;}
+a{color:inherit; text-decoration:none;}
+button{font-family:inherit; cursor:pointer;}
+.wrap{max-width:1080px; margin:0 auto; padding:0 26px;}
+.mono{font-family:var(--font-mono);}
+.eyebrow{font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.16em; font-size:11.5px; color:var(--cyan); display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+.eyebrow::before{content:'//'; color:var(--muted);}
+h1,h2,h3{font-family:var(--font-mono); font-weight:700; letter-spacing:-.01em; line-height:1.08;}
+.section{padding:100px 0;}
+.section-head{max-width:600px; margin-bottom:52px;}
+.section-head h2{font-size:clamp(26px,3.4vw,36px); text-transform:uppercase;}
+.section-head p{color:var(--muted); margin-top:12px; font-size:15px; line-height:1.7;}
+.btn{display:inline-flex; align-items:center; gap:9px; padding:14px 24px; border-radius:4px; font-family:var(--font-mono); font-weight:600; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; border:1px solid var(--border); transition:all .18s ease;}
+.btn-solid{background:var(--cyan); color:#04151a; border-color:var(--cyan);}
+.btn-solid:hover{box-shadow:0 0 26px rgba(34,211,238,.45); transform:translateY(-2px);}
+.btn-ghost{background:transparent; color:var(--text);}
+.btn-ghost:hover{border-color:var(--cyan); color:var(--cyan); transform:translateY(-2px);}
+
+/* NAV */
+#nav{position:fixed; top:0; left:0; right:0; z-index:200; background:rgba(10,13,18,.7); backdrop-filter:blur(14px); border-bottom:1px solid var(--border);}
+#nav .wrap{display:flex; align-items:center; justify-content:space-between; height:64px;}
+.logo{display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-weight:700; font-size:15px;}
+.logo .prompt{color:var(--cyan);}
+.logo .dim{color:var(--muted); font-weight:400;}
+#nav nav{display:flex; gap:26px;}
+#nav nav a{font-family:var(--font-mono); font-size:12.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;}
+#nav nav a:hover{color:var(--cyan);}
+@media(max-width:760px){#nav nav{display:none;}}
+
+/* HERO / TERMINAL */
+#hero{min-height:100vh; display:flex; align-items:center; padding-top:64px; position:relative;
+  background:radial-gradient(ellipse 55% 45% at 50% 0%, rgba(34,211,238,.09), transparent 60%);
+}
+.scanlines{position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(180deg, rgba(255,255,255,.012) 0px, rgba(255,255,255,.012) 1px, transparent 1px, transparent 3px);
+}
+.hero-inner{width:100%; position:relative; z-index:1;}
+.terminal{background:var(--panel); border:1px solid var(--border); border-radius:10px; max-width:680px; margin:0 auto 46px; box-shadow:0 30px 80px -30px rgba(0,0,0,.7);}
+.term-bar{display:flex; align-items:center; gap:7px; padding:12px 16px; border-bottom:1px solid var(--border);}
+.term-bar span{width:10px; height:10px; border-radius:50%; background:#3a3f47;}
+.term-bar span:nth-child(1){background:#F87171;} .term-bar span:nth-child(2){background:var(--amber);} .term-bar span:nth-child(3){background:var(--green);}
+.term-title{margin-left:8px; font-family:var(--font-mono); font-size:11px; color:var(--muted);}
+.term-body{padding:22px 22px 26px; font-family:var(--font-mono); font-size:13.5px; line-height:1.9; min-height:170px; color:#c7d0dc;}
+.term-body .ok{color:var(--green);}
+.term-body .cy{color:var(--cyan);}
+.term-line{opacity:0; animation:fadeLine .25s forwards;}
+.cursor{display:inline-block; width:8px; height:15px; background:var(--cyan); vertical-align:middle; animation:blink 1s step-end infinite;}
+@keyframes fadeLine{to{opacity:1;}}
+@keyframes blink{50%{opacity:0;}}
+
+.hero-reveal{opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; text-align:center;}
+.hero-reveal.show{opacity:1; transform:translateY(0);}
+.hero-reveal h1{font-size:clamp(38px,6vw,60px); text-transform:uppercase;}
+.hero-reveal h1 span{color:var(--cyan);}
+.hero-role{font-family:var(--font-mono); color:var(--amber); font-size:15px; letter-spacing:.05em; margin-top:10px; text-transform:uppercase;}
+.hero-loc{color:var(--muted); font-size:13.5px; margin-top:8px; font-family:var(--font-mono);}
+.hero-summary{max-width:640px; margin:22px auto 0; color:var(--muted); font-size:15px; line-height:1.75;}
+.hero-cta{display:flex; gap:14px; justify-content:center; margin-top:32px; flex-wrap:wrap;}
+
+/* STATUS STRIP */
+#status{border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:var(--panel);}
+.status-grid{display:grid; grid-template-columns:repeat(5,1fr); }
+@media(max-width:900px){.status-grid{grid-template-columns:repeat(2,1fr);}}
+.status-cell{padding:30px 20px; text-align:center; border-right:1px solid var(--border);}
+.status-cell:last-child{border-right:none;}
+.status-cell b{display:block; font-family:var(--font-mono); font-size:28px; color:var(--cyan);}
+.status-cell span{display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:6px; font-family:var(--font-mono);}
+
+/* EXPERIENCE / DEPLOYMENT LOG */
+.log-entry{border:1px solid var(--border); border-radius:10px; background:var(--surface); margin-bottom:26px; overflow:hidden;}
+.log-head{display:flex; justify-content:space-between; align-items:center; padding:20px 26px; border-bottom:1px solid var(--border); flex-wrap:wrap; gap:10px;}
+.log-head h3{font-size:17px; text-transform:uppercase; letter-spacing:.01em;}
+.log-head .role-org{color:var(--muted); font-size:13px; margin-top:5px; font-family:var(--font-sans); font-weight:500;}
+.log-tag{font-family:var(--font-mono); font-size:11.5px; background:rgba(34,211,238,.1); color:var(--cyan); border:1px solid rgba(34,211,238,.3); padding:6px 12px; border-radius:20px; white-space:nowrap;}
+.log-body{padding:22px 26px;}
+.log-line{display:flex; gap:12px; padding:10px 0; border-bottom:1px dashed rgba(255,255,255,.06); font-size:14px; line-height:1.65; color:#c7d0dc;}
+.log-line:last-child{border-bottom:none;}
+.log-line .dot{width:7px; height:7px; border-radius:50%; background:var(--green); margin-top:8px; flex-shrink:0;}
+
+/* SKILLS */
+.skill-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:20px;}
+@media(max-width:760px){.skill-grid{grid-template-columns:1fr;}}
+.skill-card{background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:24px;}
+.skill-card h4{font-family:var(--font-mono); font-size:12.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--amber); margin-bottom:16px; display:flex; align-items:center; gap:8px;}
+.skill-card h4::before{content:'▸'; color:var(--cyan);}
+.tag-row{display:flex; flex-wrap:wrap; gap:8px;}
+.tag{font-family:var(--font-mono); font-size:12px; background:rgba(255,255,255,.045); border:1px solid var(--border); padding:6px 12px; border-radius:5px; color:var(--text);}
+
+/* CERTS */
+.cert-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+@media(max-width:900px){.cert-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.cert-grid{grid-template-columns:1fr;}}
+.cert-card{border:1px solid var(--border); border-radius:10px; padding:20px; background:var(--surface); transition:transform .18s, border-color .18s;}
+.cert-card:hover{transform:translateY(-4px); border-color:rgba(34,211,238,.4);}
+.cert-card .ctag{font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--cyan); margin-bottom:8px;}
+.cert-card p{font-size:13.5px; color:#c7d0dc; line-height:1.6;}
+
+/* AWARDS */
+.award-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px;}
+@media(max-width:760px){.award-grid{grid-template-columns:1fr;}}
+.award-card{display:flex; gap:16px; border:1px solid var(--border); border-radius:10px; padding:22px; background:linear-gradient(160deg, rgba(245,166,35,.06), transparent);}
+.award-icon{width:44px; height:44px; border-radius:8px; background:rgba(245,166,35,.12); border:1px solid rgba(245,166,35,.35); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;}
+.award-card h4{font-size:14.5px; text-transform:uppercase; margin-bottom:6px; letter-spacing:.02em;}
+.award-card p{font-size:13.5px; color:var(--muted); line-height:1.6;}
+
+/* RESUME */
+.resume-card{display:flex; align-items:center; gap:24px; border:1px solid var(--border); border-radius:12px; background:var(--surface); padding:30px; flex-wrap:wrap;}
+.resume-icon{width:64px; height:76px; flex-shrink:0; background:var(--panel); border:1px solid var(--border); border-radius:6px; position:relative; display:flex; align-items:center; justify-content:center;}
+.resume-icon::before{content:'PDF'; font-family:var(--font-mono); font-size:10px; font-weight:700; color:var(--cyan); background:rgba(34,211,238,.12); border:1px solid rgba(34,211,238,.4); padding:2px 6px; border-radius:3px;}
+.resume-info{flex:1; min-width:200px;}
+.resume-info .fname{font-family:var(--font-mono); font-size:15px; font-weight:600;}
+.resume-info .fmeta{font-family:var(--font-mono); font-size:12px; color:var(--muted); margin-top:6px;}
+.resume-actions{display:flex; gap:12px; flex-wrap:wrap;}
+
+/* CONTACT / FOOTER */
+#contact{text-align:center; border-top:1px solid var(--border); padding:100px 0 60px;}
+#contact h2{font-size:clamp(28px,4vw,42px); text-transform:uppercase;}
+#contact p{color:var(--muted); margin:16px auto 32px; max-width:480px;}
+.contact-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+.foot-note{margin-top:70px; font-family:var(--font-mono); font-size:11.5px; color:var(--muted); text-align:center;}
+.foot-note .blink{color:var(--green);}
+</style>
+</head>
+<body>
+
+<div id="nav">
+  <div class="wrap">
+    <div class="logo"><span class="prompt">gs@infra</span><span class="dim">:~$</span></div>
+    <nav>
+      <a href="#experience">Experience</a>
+      <a href="#skills">Skills</a>
+      <a href="#certifications">Certifications</a>
+      <a href="#awards">Awards</a>
+      <a href="#resume">Resume</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<section id="hero">
+  <div class="scanlines"></div>
+  <div class="wrap hero-inner">
+    <div class="terminal">
+      <div class="term-bar"><span></span><span></span><span></span><div class="term-title">gaurav@newtown-infra — zsh</div></div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+    <div class="hero-reveal" id="heroReveal">
+      <h1>Gaurav <span>Sinha</span></h1>
+      <div class="hero-role">Systems and Cloud Infra Admin</div>
+      <div class="hero-loc">Kolkata, India · 5+ Years in Enterprise Virtualization &amp; Infrastructure Ops</div>
+      <p class="hero-summary">System Administrator specializing in VMware vSphere, ESXi, Active Directory, PowerShell/PowerCLI, patch management and ITIL-based service management — delivering zero-downtime upgrades, automated provisioning and 99.9% system availability across large-scale production environments.</p>
+      <div class="hero-cta">
+        <a class="btn btn-solid" href="mailto:sinhagaurav.101.gs@gmail.com">Email Me</a>
+        <a class="btn btn-ghost" href="https://linkedin.com/in/gauravsinha" target="_blank" rel="noopener">LinkedIn Profile</a>
+        <a class="btn btn-ghost" href="tel:+919163969172">+91-9163969172</a>
+        <a class="btn btn-ghost" href="Gaurav_Sinha_Resume.pdf" download>Download Resume ↓</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="status">
+  <div class="wrap">
+    <div class="status-grid">
+      <div class="status-cell"><b>5+</b><span>Years Experience</span></div>
+      <div class="status-cell"><b id="uptimeStat">0%</b><span>Infra Availability</span></div>
+      <div class="status-cell"><b>150+</b><span>VMs Provisioned</span></div>
+      <div class="status-cell"><b>40%</b><span>Manual Effort Reduced</span></div>
+      <div class="status-cell"><b>30%</b><span>Onboarding Efficiency ↑</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="experience">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">deployment_log.txt</div>
+      <h2>Work Experience</h2>
+      <p>A running log of platforms operated, incidents resolved and infrastructure shipped.</p>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-head">
+        <div>
+          <h3>Senior Analyst</h3>
+          <div class="role-org">Capgemini India</div>
+        </div>
+        <span class="log-tag">Oct 2022 — Aug 2026</span>
+      </div>
+      <div class="log-body">
+        <div class="log-line"><span class="dot"></span>Led VMware ESXi 8.x upgrade activities across multiple production clusters — planning, compatibility validation, execution and post-upgrade health checks — achieving zero critical production downtime.</div>
+        <div class="log-line"><span class="dot"></span>Automated provisioning of 50+ virtual machines using PowerShell and PowerCLI, reducing manual effort by 40% and standardizing deployment processes.</div>
+        <div class="log-line"><span class="dot"></span>Administered Windows Server 2012–2022 environments including Active Directory, DNS, DHCP, Group Policy and identity management while maintaining SLA compliance.</div>
+        <div class="log-line"><span class="dot"></span>Managed enterprise VMware vSphere environments leveraging HA, DRS, vMotion, Storage vMotion and Distributed Switches to optimize workload placement and availability.</div>
+        <div class="log-line"><span class="dot"></span>Managed ESXi host lifecycle operations — patching, firmware upgrades, vulnerability remediation and compliance — improving platform stability and security posture.</div>
+        <div class="log-line"><span class="dot"></span>Led resolution of P1/P2/P3 major incidents, performing root cause analysis across virtualization, compute, storage, networking and authentication issues within SLA.</div>
+        <div class="log-line"><span class="dot"></span>Developed PowerShell/PowerCLI automation for infrastructure reporting and operational workflows, leveraging AI-assisted development to accelerate scripting and documentation.</div>
+        <div class="log-line"><span class="dot"></span>Performed infrastructure health assessments, capacity planning, performance tuning and DR readiness validation — improving VM efficiency by 15% while sustaining 99.9% availability.</div>
+        <div class="log-line"><span class="dot"></span>Drove ITIL-based Change, Incident and Problem Management through ServiceNow, improving operational turnaround time by 15%.</div>
+        <div class="log-line"><span class="dot"></span>Authored technical documentation, SOPs and runbooks, and led knowledge-transfer sessions that improved onboarding efficiency and team productivity by 30%.</div>
+        <div class="log-line"><span class="dot"></span>Served as technical escalation point for critical production incidents, providing structured troubleshooting and infrastructure recommendations to maintain business continuity.</div>
+      </div>
+    </div>
+
+    <div class="log-entry">
+      <div class="log-head">
+        <div>
+          <h3>Analyst</h3>
+          <div class="role-org">Capgemini India</div>
+        </div>
+        <span class="log-tag">Jan 2021 — Sep 2022</span>
+      </div>
+      <div class="log-body">
+        <div class="log-line"><span class="dot"></span>Provisioned and deployed 100+ enterprise virtual machines using standardized VMware templates, reducing deployment time by 50%.</div>
+        <div class="log-line"><span class="dot"></span>Managed the end-to-end VM lifecycle — provisioning, snapshot management, backup/recovery validation, resource allocation and decommissioning.</div>
+        <div class="log-line"><span class="dot"></span>Optimized CPU, memory and storage resources across VMware environments to eliminate contention and maximize utilization.</div>
+        <div class="log-line"><span class="dot"></span>Monitored enterprise virtual infrastructure with centralized tools, proactively identifying performance bottlenecks and capacity constraints.</div>
+        <div class="log-line"><span class="dot"></span>Resolved complex virtualization incidents — provisioning failures, resource contention, performance degradation and access issues — consistently meeting SLA targets.</div>
+        <div class="log-line"><span class="dot"></span>Developed infrastructure utilization dashboards and operational reports supporting capacity planning and resource forecasting.</div>
+        <div class="log-line"><span class="dot"></span>Collaborated with application, network, storage and security teams to support production deployments and improve service reliability.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="skills" style="background:var(--panel); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">loaded_modules</div>
+      <h2>Skills</h2>
+      <p>Core competencies across virtualization, infrastructure and automation tooling.</p>
+    </div>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <h4>Virtualization</h4>
+        <div class="tag-row">
+          <span class="tag">VMware vSphere</span><span class="tag">ESXi</span><span class="tag">vCenter</span>
+          <span class="tag">HA</span><span class="tag">DRS</span><span class="tag">FT</span><span class="tag">vMotion</span>
+          <span class="tag">Storage vMotion</span><span class="tag">vSAN</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h4>Windows Infrastructure</h4>
+        <div class="tag-row">
+          <span class="tag">Windows Server 2012–2022</span><span class="tag">Active Directory</span>
+          <span class="tag">DNS</span><span class="tag">DHCP</span><span class="tag">Group Policy</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h4>Automation &amp; Scripting</h4>
+        <div class="tag-row">
+          <span class="tag">PowerShell</span><span class="tag">PowerCLI</span><span class="tag">Infrastructure Automation</span>
+        </div>
+      </div>
+      <div class="skill-card">
+        <h4>Monitoring &amp; ITSM</h4>
+        <div class="tag-row">
+          <span class="tag">ServiceNow</span><span class="tag">Splunk</span><span class="tag">SolarWinds</span>
+          <span class="tag">Dell OpenManage Enterprise</span><span class="tag">HP OneView</span>
+        </div>
+      </div>
+      <div class="skill-card" style="grid-column:1/-1;">
+        <h4>AI Productivity</h4>
+        <div class="tag-row">
+          <span class="tag">Prompt Engineering</span><span class="tag">AI-Assisted PowerShell Scripting</span>
+          <span class="tag">Technical Documentation Automation</span><span class="tag">Workflow Automation</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="certifications">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">certifications.log</div>
+      <h2>Certifications</h2>
+      <p>Ongoing professional development across virtualization, methodology and applied AI.</p>
+    </div>
+    <div class="cert-grid">
+      <div class="cert-card"><div class="ctag">Leadership</div><p><strong>McKinsey Forward Program</strong> — structured problem-solving, communication, leadership, adaptability, resilience and digital productivity.</p></div>
+      <div class="cert-card"><div class="ctag">VMware</div><p><strong>Administration in vSphere 8</strong> (Udemy) · Fundamentals of VMware Data Center Concepts (Coursera) · VCP-DCV Foundation &amp; vSphere 8.x Architecture (Coursera)</p></div>
+      <div class="cert-card"><div class="ctag">Methodology</div><p>Agile Software Development (Coursera) · Lean Six Sigma &amp; White Belt (Simplilearn / Coursera) · Project Management (Google)</p></div>
+      <div class="cert-card"><div class="ctag">Soft Skills</div><p><strong>Leadership Skills</strong> — IIM Ahmedabad</p></div>
+      <div class="cert-card"><div class="ctag">Gen AI</div><p>Introduction to GenAI (Google) · Complete Prompt Engineering for AI Bootcamp (Udemy)</p></div>
+      <div class="cert-card"><div class="ctag">Sustainability</div><p>Introduction to Greenhouse Gas Accounting for IT — Cisco</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="awards" style="background:var(--panel); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">recognitions</div>
+      <h2>Awards &amp; Recognitions</h2>
+    </div>
+    <div class="award-grid">
+      <div class="award-card"><div class="award-icon">🏆</div><div><h4>GOAT Award</h4><p>Recognized for remediating critical infrastructure vulnerabilities across multiple remote sites through cross-functional collaboration.</p></div></div>
+      <div class="award-card"><div class="award-icon">⭐</div><div><h4>Employee of the Month</h4><p>Awarded for executing ESXi patching, BIOS and firmware upgrades with zero production downtime.</p></div></div>
+      <div class="award-card"><div class="award-icon">🎖</div><div><h4>Certificate of Excellence</h4><p>Recognized for outstanding execution of VMware infrastructure operations and service delivery.</p></div></div>
+      <div class="award-card"><div class="award-icon">🤝</div><div><h4>Client Appreciation</h4><p>Received multiple client recognitions for successfully delivering MES IT downtime activities and infrastructure maintenance.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="resume">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">resume.pdf</div>
+      <h2>Resume</h2>
+      <p>Full CV with complete role history, certifications and recognitions — ready to download.</p>
+    </div>
+    <div class="resume-card">
+      <div class="resume-icon"></div>
+      <div class="resume-info">
+        <div class="fname">Gaurav_Sinha_Resume.pdf</div>
+        <div class="fmeta">Systems and Cloud Infra Admin · Updated 2026 · PDF</div>
+      </div>
+      <div class="resume-actions">
+        <a class="btn btn-solid" href="Gaurav_Sinha_Resume.pdf" download>Download ↓</a>
+        <a class="btn btn-ghost" href="Gaurav_Sinha_Resume.pdf" target="_blank" rel="noopener">View in Browser</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;">get_in_touch</div>
+    <h2>Let's Build Reliable Infrastructure</h2>
+    <p>Open to conversations on virtualization, cloud infrastructure and automation roles.</p>
+    <div class="contact-row">
+      <a class="btn btn-solid" href="mailto:sinhagaurav.101.gs@gmail.com">sinhagaurav.101.gs@gmail.com</a>
+      <a class="btn btn-ghost" href="https://linkedin.com/in/gauravsinha" target="_blank" rel="noopener">linkedin.com/in/gauravsinha</a>
+      <a class="btn btn-ghost" href="tel:+919163969172">+91-9163969172</a>
+    </div>
+    <div class="foot-note">gs@infra:~$ echo "status: <span class="blink">online</span> · location: Kolkata, India"</div>
+  </div>
+</section>
+
+<script>
+const bootLines = [
+  '$ ssh gaurav@newtown-infra',
+  'Authenticating... <span class="ok">OK</span>',
+  'Checking cluster health... 47/47 hosts <span class="ok">online</span>',
+  'Loading profile: <span class="cy">Systems &amp; Cloud Infra Admin</span>',
+  'Uptime (30d): <span class="ok">99.9%</span>',
+  'Access granted.'
+];
+const termBody = document.getElementById('termBody');
+let li = 0;
+function typeLine(){
+  if(li >= bootLines.length){
+    setTimeout(()=>document.getElementById('heroReveal').classList.add('show'), 200);
+    return;
+  }
+  const div = document.createElement('div');
+  div.className = 'term-line';
+  div.innerHTML = bootLines[li] + (li===bootLines.length-1 ? ' <span class="cursor"></span>' : '');
+  div.style.animationDelay = '0s';
+  termBody.appendChild(div);
+  li++;
+  setTimeout(typeLine, 420);
+}
+typeLine();
+
+/* uptime counter */
+let uv = 0;
+const target = 99.9;
+const uptimeEl = document.getElementById('uptimeStat');
+const iv = setInterval(()=>{
+  uv += 4.2;
+  if(uv >= target){ uv = target; clearInterval(iv); }
+  uptimeEl.textContent = uv.toFixed(1) + '%';
+}, 45);
+</script>
+</body>
+</html>
